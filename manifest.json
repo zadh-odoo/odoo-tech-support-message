@@ -3,7 +3,7 @@
   "name": "Odoo Tech Support Message",
   "version": "1.0",
   "description": "Quick tech support responses for Odoo customer messages",
-  "permissions": ["activeTab", "storage"],
+  "permissions": ["activeTab", "storage", "scripting"],
   "host_permissions": ["<all_urls>"],
   "action": {
     "default_popup": "popup.html",

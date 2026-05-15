@@ -319,20 +319,60 @@ document.addEventListener('DOMContentLoaded', () => {
       let formattedMessage = messageTemplate.replace(/{name}/g, name);
 
       chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        if (tabs[0]) {
-          chrome.tabs.sendMessage(tabs[0].id, {
-            action: 'insertMessage',
-            message: formattedMessage
-          }, (response) => {
-            if (chrome.runtime.lastError) {
-              console.log('Could not send message to tab:', chrome.runtime.lastError);
-            } else {
-              window.close();
-            }
-          });
+        if (!tabs || tabs.length === 0) {
+          showError('No active tab found. Please make sure you are on a page and try again.');
+          return;
         }
+
+        const activeTab = tabs[0];
+        chrome.tabs.sendMessage(activeTab.id, {
+          action: 'insertMessage',
+          message: formattedMessage
+        }, (response) => {
+          if (chrome.runtime.lastError) {
+            injectContentScript(activeTab.id, formattedMessage);
+          } else if (response && response.success) {
+            window.close();
+          } else {
+            showError('Failed to insert message. Please try again.');
+          }
+        });
       });
     });
+  }
+
+  function injectContentScript(tabId, message) {
+    chrome.scripting.executeScript({
+      target: { tabId: tabId },
+      files: ['content.js']
+    }, () => {
+      if (chrome.runtime.lastError) {
+        showError('Could not load the extension on this page. Please refresh the page and try again.');
+        return;
+      }
+      setTimeout(() => {
+        chrome.tabs.sendMessage(tabId, {
+          action: 'insertMessage',
+          message: message
+        }, (response) => {
+          if (chrome.runtime.lastError) {
+            showError('Could not insert message. Please make sure you are on an Odoo page.');
+          } else {
+            window.close();
+          }
+        });
+      }, 500);
+    });
+  }
+
+  function showError(message) {
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'error-message';
+    errorDiv.textContent = message;
+    errorDiv.style.cssText = 'background: #fee; border: 1px solid #fcc; padding: 10px; margin: 10px; border-radius: 4px; color: #c00; font-size: 12px;';
+    const messageList = document.getElementById('messageList');
+    messageList.insertBefore(errorDiv, messageList.firstChild);
+    setTimeout(() => errorDiv.remove(), 5000);
   }
 
   function openEditModal(id, title, content, isDefault) {
