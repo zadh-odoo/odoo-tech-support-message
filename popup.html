@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    /* Odoo Dark Theme Variables */
+    :root {
+      --o-white: #000;
+      --o-black: #FFF;
+      --o-gray-100: #1B1D26;
+      --o-gray-200: #262A36;
+      --o-gray-300: #3C3E4B;
+      --o-gray-400: #5A5E6B;
+      --o-gray-500: #6B707F;
+      --o-gray-600: #7E8392;
+      --o-gray-700: #B1B3BC;
+      --o-gray-800: #D1D1D1;
+      --o-gray-900: #E4E4E4;
+      --o-enterprise-color: #6b3e66;
+      --o-enterprise-action: #02c7b5;
+      --o-success: #1dc959;
+      --o-info: #6AB5FB;
+      --o-warning: #FBB56A;
+      --o-danger: #b83232;
+      --o-text-primary: #b972a6;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      width: 512px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Ubuntu, sans-serif;
+      background: var(--o-gray-100);
+      color: var(--o-gray-900);
+    }
+
+    .container {
+      padding: 16px;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--o-gray-300);
+    }
+
+    .header img {
+      width: 28px;
+      height: 28px;
+    }
+
+    .header h3 {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--o-gray-900);
+      letter-spacing: -0.3px;
+    }
+
+    .name-input-section {
+      margin-bottom: 16px;
+    }
+
+    .name-input-section input {
+      width: 100%;
+      padding: 8px 12px;
+      background: var(--o-gray-200);
+      border: 1px solid var(--o-gray-300);
+      border-radius: 6px;
+      font-size: 13px;
+      color: var(--o-gray-900);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .name-input-section input::placeholder {
+      color: var(--o-gray-500);
+    }
+
+    .name-input-section input:focus {
+      border-color: var(--o-enterprise-action);
+      box-shadow: 0 0 0 2px rgba(2, 199, 181, 0.15);
+    }
+
+    .btn-save {
+      width: 100%;
+      margin-top: 10px;
+      padding: 9px 16px;
+      background: var(--o-enterprise-color);
+      color: var(--o-black);
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    .btn-save:hover {
+      background: #7d4d79;
+    }
+
+    .btn-save:active {
+      transform: scale(0.98);
+    }
+
+    .welcome-section {
+      display: none;
+    }
+
+    .welcome-section.active {
+      display: block;
+    }
+
+    .saved-name {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      padding: 10px 12px;
+      background: var(--o-gray-200);
+      border-radius: 6px;
+      font-size: 13px;
+    }
+
+    .saved-name .name-display {
+      color: var(--o-enterprise-action);
+      font-weight: 500;
+    }
+
+    .edit-name {
+      color: var(--o-gray-500);
+      cursor: pointer;
+      font-size: 12px;
+      transition: color 0.2s;
+    }
+
+    .edit-name:hover {
+      color: var(--o-enterprise-action);
+    }
+
+    .message-list {
+      display: none;
+    }
+
+    .message-list.active {
+      display: block;
+    }
+
+    .section-title {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--o-gray-500);
+      margin-bottom: 10px;
+    }
+
+    .message-item {
+      padding: 12px;
+      margin-bottom: 8px;
+      background: var(--o-gray-200);
+      border: 1px solid transparent;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+    }
+
+    .message-item:hover {
+      background: var(--o-gray-300);
+      border-color: var(--o-enterprise-action);
+    }
+
+    .message-item:active {
+      transform: scale(0.98);
+    }
+
+    .message-item .title {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--o-gray-900);
+      margin-bottom: 4px;
+    }
+
+    .message-item small {
+      display: block;
+      font-size: 11px;
+      color: var(--o-gray-500);
+      line-height: 1.4;
+    }
+
+    .edited-badge {
+      font-size: 10px;
+      color: var(--o-enterprise-action);
+      font-weight: normal;
+    }
+
+    .message-item .message-item-actions {
+      display: none;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .message-item:hover .message-item-actions {
+      display: flex;
+    }
+
+    .message-action-btn {
+      padding: 3px 8px;
+      font-size: 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+    }
+
+    .btn-edit {
+      background: var(--o-gray-400);
+      color: var(--o-black);
+    }
+
+    .btn-edit:hover {
+      background: var(--o-enterprise-action);
+    }
+
+    .btn-delete {
+      background: var(--o-danger);
+      color: var(--o-white);
+    }
+
+    .btn-delete:hover {
+      background: #d94040;
+    }
+
+    .add-message-btn {
+      width: 100%;
+      padding: 10px 16px;
+      background: var(--o-gray-200);
+      color: var(--o-gray-900);
+      border: 1px dashed var(--o-gray-400);
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      transition: all 0.2s;
+      margin-bottom: 12px;
+    }
+
+    .add-message-btn:hover {
+      background: var(--o-gray-300);
+      border-color: var(--o-enterprise-action);
+    }
+
+    .empty-state {
+      color: var(--o-gray-500);
+      font-size: 12px;
+      text-align: center;
+      padding: 24px;
+      background: var(--o-gray-200);
+      border-radius: 6px;
+    }
+
+    .divider {
+      height: 1px;
+      background: var(--o-gray-300);
+      margin: 16px 0;
+    }
+
+    /* Modal Styles */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 100;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal {
+      background: var(--o-gray-100);
+      border-radius: 8px;
+      padding: 20px;
+      width: 300px;
+      max-width: 90%;
+    }
+
+    .modal h4 {
+      font-size: 14px;
+      margin-bottom: 16px;
+      color: var(--o-gray-900);
+    }
+
+    .modal input,
+    .modal textarea {
+      width: 100%;
+      padding: 8px 12px;
+      background: var(--o-gray-200);
+      border: 1px solid var(--o-gray-300);
+      border-radius: 6px;
+      font-size: 13px;
+      color: var(--o-gray-900);
+      outline: none;
+      margin-bottom: 12px;
+    }
+
+    .modal textarea {
+      min-height: 150px;
+      resize: vertical;
+      font-family: monospace;
+      font-size: 12px;
+    }
+
+    .modal input:focus,
+    .modal textarea:focus {
+      border-color: var(--o-enterprise-action);
+    }
+
+    .modal-hint {
+      font-size: 11px;
+      color: var(--o-gray-500);
+      margin-bottom: 12px;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .modal-actions button {
+      flex: 1;
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      border: none;
+      transition: all 0.2s;
+    }
+
+    .btn-cancel {
+      background: var(--o-gray-300);
+      color: var(--o-gray-900);
+    }
+
+    .btn-cancel:hover {
+      background: var(--o-gray-400);
+    }
+
+    .btn-submit {
+      background: var(--o-enterprise-action);
+      color: var(--o-black);
+    }
+
+    .btn-submit:hover {
+      background: #02b5a8;
+    }
+
+    /* Scrollbar styling */
+    .message-list::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .message-list::-webkit-scrollbar-track {
+      background: var(--o-gray-100);
+    }
+
+    .message-list::-webkit-scrollbar-thumb {
+      background: var(--o-gray-400);
+      border-radius: 3px;
+    }
+
+    .message-list::-webkit-scrollbar-thumb:hover {
+      background: var(--o-gray-500);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <img src="./icon128.png" alt="">
+      <h3>Tech Support Message</h3>
+    </div>
+
+    <div id="nameSection" class="name-input-section">
+      <input type="text" id="userName" placeholder="Enter your name" />
+      <button class="btn-save" id="saveNameBtn">Save</button>
+    </div>
+
+    <div id="welcomeSection" class="welcome-section">
+      <div class="saved-name">
+        <span>Welcome, <span id="savedName" class="name-display"></span></span>
+        <span class="edit-name" id="editName">Edit</span>
+      </div>
+    </div>
+
+    <div id="messageList" class="message-list">
+      <button class="add-message-btn" id="addMessageBtn">+ Add New Message</button>
+    </div>
+
+    <div id="emptyState" class="empty-state" style="display:none;">
+      Please enter your name to see available messages.
+    </div>
+  </div>
+
+  <!-- Modal for Add/Edit Message -->
+  <div id="messageModal" class="modal-overlay">
+    <div class="modal">
+      <h4 id="modalTitle">Add New Message</h4>
+      <input type="text" id="messageTitle" placeholder="Message title" />
+      <p class="modal-hint">Use {name} to insert the dynamic name</p>
+      <textarea id="messageContent" placeholder="Enter your message template...
+
+Example:
+Hello {name},
+
+Thank you for reaching out! I'm happy to help.
+
+Best regards,
+{name}"></textarea>
+      <div class="modal-actions">
+        <button class="btn-cancel" id="cancelMessageBtn">Cancel</button>
+        <button class="btn-submit" id="saveMessageBtn">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
