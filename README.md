@@ -1,67 +1,99 @@
-# Odoo Tech Support Messages Extension
+<div align="center">
+  <h1>🚀 Odoo Tech Support Messages</h1>
+  <p><strong>Blazing-fast ⚡ pre-defined message templates for Odoo Support Agents</strong></p>
+  <p>
+    <img src="https://img.shields.io/badge/Chrome_Extension-v3-4285F4?logo=googlechrome&logoColor=white" alt="Chrome Extension v3">
+    <img src="https://img.shields.io/badge/license-MIT-green" alt="MIT License">
+    <img src="https://img.shields.io/badge/PRs-welcome-brightgreen" alt="PRs Welcome">
+  </p>
+  <br>
+  <img src="./assets/demo1.gif" width="400" alt="Demo 1">
+  <img src="./assets/demo2.gif" width="400" alt="Demo 2">
+</div>
 
-A Chrome extension for quickly inserting pre-defined tech support message templates into Odoo's mail composer.
+---
 
-![Extension Demo](./assets/demo.gif)
+## 📖 About
 
-## Description
+A Chrome extension for **Odoo Tech Support agents** to instantly insert pre-built message templates into the mail composer. Stop typing the same responses — just click and send! 🎯
 
-This extension is designed for Odoo Tech Support agents to quickly send standardized responses. It includes 10 pre-built Odoo-specific message templates with placeholders for dynamic content like database links, issue explanations, and fix instructions.
+Includes **10 ready-to-use templates** with smart placeholders for dynamic content like database links, issue explanations, and fix instructions.
 
-## Features
+## ✨ Features
 
-- **10 Pre-built Odoo Support Messages** - Ready-to-use templates for common support scenarios
-- **Smart Placeholders** - Edit placeholders like [link here], [Explain an issue] before sending
-- **Dynamic Name** - Use `{name}` placeholder to automatically insert your name
-- **Custom Messages** - Add your own custom message templates
-- **Edit/Reset Standard Messages** - Customize any message, reset to default anytime
-- **Persistent Storage** - Your name, custom messages, and edits are saved across browser sessions
+| Feature | Description |
+|---------|-------------|
+| 📋 **10 Pre-built Templates** | Ready-to-use messages for common support scenarios |
+| 🧠 **Smart Placeholders** | Edit `[link here]`, `[Explain an issue]` before sending |
+| 👤 **Dynamic Name** | Use `{name}` — auto-replaced with your name |
+| ✏️ **Custom Messages** | Add your own templates on the fly |
+| 🔄 **Edit/Reset** | Customize any message, reset to default anytime |
+| 💾 **Persistent Storage** | All data saved across browser sessions |
 
-## Installation
+## 🛠️ Installation
 
-1. Clone this repository or download the ZIP file
-2. Open Chrome and navigate to `chrome://extensions/`
-3. Enable "Developer mode" (toggle in the top right)
-4. Click "Load unpacked" and select the extension folder
-5. The extension icon will appear in your browser toolbar
+```bash
+git clone https://github.com/yourusername/odoo-tech-support-message.git
+```
 
-## Usage
+1. Open Chrome → navigate to `chrome://extensions/`
+2. Toggle **"Developer mode"** (top right) 🔧
+3. Click **"Load unpacked"** → select the extension folder 📂
+4. The extension icon appears in your toolbar 🎉
 
-1. Click the extension icon in your browser toolbar
-2. Enter your name and click "Save"
-3. Click on any message template to insert it into Odoo's mail composer
-4. Edit the placeholder content (like [link here], [Explain an issue]) before sending
+## 🎮 Usage
 
-## Standard Messages
+1. Click the extension icon 🖱️
+2. Enter your name → hit **Save** ✅
+3. Click any message template to insert into Odoo's mail composer 📨
+4. Tweak placeholders like `[link here]` before sending ✍️
 
-1. **Investigating** - Issue under investigation
-2. **Standard Bug Confirmed** - Standard bug in system
-3. **Schedule Call** - Schedule a call with meet link
-4. **Fix Deployed** - Fix deployed to database
-5. **Fix in Pipeline** - Fix in deployment pipeline
-6. **Known Bug** - Known bug reported to bug-fix team
-7. **View Fix Applied** - View/inactive fix with steps
-8. **Dummy DB Verification** - Temporary DB for verification
-9. **Production Deployed** - Fix deployed to production
-10. **Staging Verification** - Staging environment fix
+## 💬 Standard Messages
 
-## Placeholders
+| # | Template | Description |
+|---|----------|-------------|
+| 🔍 | **Investigating** | Issue under investigation |
+| 🐛 | **Standard Bug Confirmed** | Standard bug in system |
+| 📞 | **Schedule Call** | Schedule a call with meet link |
+| ✅ | **Fix Deployed** | Fix deployed to database |
+| 🚀 | **Fix in Pipeline** | Fix in deployment pipeline |
+| 🏷️ | **Known Bug** | Known bug reported to bug-fix team |
+| 👁️ | **View Fix Applied** | View/inactive fix with steps |
+| 🗄️ | **Dummy DB Verification** | Temporary DB for verification |
+| 🏭 | **Production Deployed** | Fix deployed to production |
+| 🧪 | **Staging Verification** | Staging environment fix |
 
-- `{name}` - Your name (auto-replaced)
-- `[link here]` - Database/staging link
-- `[Explain an issue here]` - Describe the issue
-- `[Explain cause here]` - Root cause explanation
-- `[Time here]` - Scheduled time
-- `[Step 1/2/3 here]` - Fix steps
+## 📌 Placeholders
 
-## Files
+| Placeholder | Description |
+|-------------|-------------|
+| `{name}` | Your name (auto-replaced) |
+| `[link here]` | Database/staging link |
+| `[Explain an issue here]` | Describe the issue |
+| `[Explain cause here]` | Root cause explanation |
+| `[Time here]` | Scheduled time |
+| `[Step 1/2/3 here]` | Fix steps |
 
-- `manifest.json` - Chrome extension manifest (v3)
-- `popup.html` - Extension popup UI
-- `popup.js` - Popup logic and message management
-- `content.js` - Content script for inserting messages into Odoo
-- `icon*.png` - Extension icons
+## 📁 Project Files
 
-## License
+| File | Purpose |
+|------|---------|
+| `manifest.json` | 📜 Chrome extension manifest (v3) |
+| `popup.html` | 🖼️ Extension popup UI |
+| `popup.js` | ⚙️ Popup logic & message management |
+| `content.js` | 🔌 Content script for Odoo integration |
+| `icon*.png` | 🎨 Extension icons |
 
-MIT
+## 🚧 Missing Features (PRs Welcome!)
+
+These features are **not yet implemented** — want to contribute? Go for it! 💪
+
+- 🤖 **AI-generated messages** — Auto-generate support replies using AI and post directly to the Odoo chatter
+- 📝 **Log note support** — Create and insert log notes (not just messages)
+- 🌍 **Multi-language support** — Internationalize the UI and message templates
+
+> Found a bug? 🐛 Have an idea? 💡 Feel free to [open an issue](https://github.com/yourusername/odoo-tech-support-message/issues) or submit a PR!
+
+## 📄 License
+
+MIT — do whatever you want, just don't blame us 😄
