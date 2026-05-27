@@ -381,6 +381,108 @@
     .message-list::-webkit-scrollbar-thumb:hover {
       background: var(--o-gray-500);
     }
+
+    /* Translator Modal Styles */
+    .translate-modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 200;
+    }
+
+    .translate-modal-overlay.active {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .translate-modal {
+      background: var(--o-gray-100);
+      border-radius: 8px;
+      padding: 20px;
+      width: 340px;
+      max-width: 90%;
+    }
+
+    .translate-modal h4 {
+      font-size: 14px;
+      margin-bottom: 12px;
+      color: var(--o-gray-900);
+    }
+
+    .translate-modal .language-select {
+      width: 100%;
+      padding: 10px 12px;
+      background: var(--o-gray-200);
+      border: 1px solid var(--o-gray-300);
+      border-radius: 6px;
+      font-size: 13px;
+      color: var(--o-gray-900);
+      outline: none;
+      margin-bottom: 16px;
+      cursor: pointer;
+    }
+
+    .translate-modal .language-select:focus {
+      border-color: var(--o-enterprise-action);
+    }
+
+    .translate-modal-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .translate-modal-actions button {
+      flex: 1;
+      padding: 10px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      border: none;
+      transition: all 0.2s;
+    }
+
+    .btn-keep-original {
+      background: var(--o-gray-300);
+      color: var(--o-gray-900);
+    }
+
+    .btn-keep-original:hover {
+      background: var(--o-gray-400);
+    }
+
+    .btn-translate {
+      background: var(--o-enterprise-action);
+      color: var(--o-black);
+    }
+
+    .btn-translate:hover {
+      background: #02b5a8;
+    }
+
+    .btn-translate:disabled {
+      background: var(--o-gray-400);
+      cursor: not-allowed;
+    }
+
+    .translate-loading {
+      font-size: 12px;
+      color: var(--o-gray-500);
+      text-align: center;
+      padding: 8px;
+    }
+
+    .translate-error {
+      font-size: 11px;
+      color: var(--o-danger);
+      text-align: center;
+      padding: 8px;
+      margin-bottom: 12px;
+    }
   </style>
 </head>
 <body>
@@ -429,6 +531,22 @@ Best regards,
       <div class="modal-actions">
         <button class="btn-cancel" id="cancelMessageBtn">Cancel</button>
         <button class="btn-submit" id="saveMessageBtn">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal for Language Selection/Translation -->
+  <div id="translateModal" class="translate-modal-overlay">
+    <div class="translate-modal">
+      <h4>Translate Message</h4>
+      <select id="languageSelect" class="language-select">
+        <option value="">Select a language...</option>
+      </select>
+      <div id="translateError" class="translate-error" style="display: none;"></div>
+      <div id="translateLoading" class="translate-loading" style="display: none;">Translating...</div>
+      <div class="translate-modal-actions">
+        <button class="btn-keep-original" id="keepOriginalBtn">Keep Original Only</button>
+        <button class="btn-translate" id="translateBtn" disabled>Translate</button>
       </div>
     </div>
   </div>

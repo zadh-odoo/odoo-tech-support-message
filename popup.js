@@ -18,9 +18,58 @@ document.addEventListener('DOMContentLoaded', () => {
   const addMessageBtn = document.getElementById('addMessageBtn');
   const resetMessagesBtn = document.getElementById('resetMessagesBtn');
 
+  // Translate modal elements
+  const translateModal = document.getElementById('translateModal');
+  const languageSelect = document.getElementById('languageSelect');
+  const translateBtn = document.getElementById('translateBtn');
+  const keepOriginalBtn = document.getElementById('keepOriginalBtn');
+  const translateError = document.getElementById('translateError');
+  const translateLoading = document.getElementById('translateLoading');
+
+  let pendingMessage = null;
   let editingMessageId = null;
   let editingMessageIsDefault = false;
   let nextCustomId = 11;
+
+  // Supported languages from Chrome Translator API
+  const supportedLanguages = [
+    { code: 'ar', name: 'Arabic' },
+    { code: 'bg', name: 'Bulgarian' },
+    { code: 'zh-CN', name: 'Chinese (Simplified)' },
+    { code: 'zh-TW', name: 'Chinese (Traditional)' },
+    { code: 'hr', name: 'Croatian' },
+    { code: 'cs', name: 'Czech' },
+    { code: 'da', name: 'Danish' },
+    { code: 'nl', name: 'Dutch' },
+    { code: 'en', name: 'English' },
+    { code: 'et', name: 'Estonian' },
+    { code: 'fi', name: 'Finnish' },
+    { code: 'fr', name: 'French' },
+    { code: 'de', name: 'German' },
+    { code: 'el', name: 'Greek' },
+    { code: 'he', name: 'Hebrew' },
+    { code: 'hi', name: 'Hindi' },
+    { code: 'hu', name: 'Hungarian' },
+    { code: 'id', name: 'Indonesian' },
+    { code: 'it', name: 'Italian' },
+    { code: 'ja', name: 'Japanese' },
+    { code: 'ko', name: 'Korean' },
+    { code: 'lt', name: 'Lithuanian' },
+    { code: 'lv', name: 'Latvian' },
+    { code: 'no', name: 'Norwegian' },
+    { code: 'pl', name: 'Polish' },
+    { code: 'pt', name: 'Portuguese' },
+    { code: 'ro', name: 'Romanian' },
+    { code: 'ru', name: 'Russian' },
+    { code: 'sk', name: 'Slovak' },
+    { code: 'sl', name: 'Slovenian' },
+    { code: 'es', name: 'Spanish' },
+    { code: 'sv', name: 'Swedish' },
+    { code: 'th', name: 'Thai' },
+    { code: 'tr', name: 'Turkish' },
+    { code: 'uk', name: 'Ukrainian' },
+    { code: 'vi', name: 'Vietnamese' }
+  ];
 
   // Default messages
   const defaultMessages = [
@@ -318,27 +367,125 @@ document.addEventListener('DOMContentLoaded', () => {
       const name = result.techSupportName || 'Support';
       let formattedMessage = messageTemplate.replace(/{name}/g, name);
 
-      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        if (!tabs || tabs.length === 0) {
-          showError('No active tab found. Please make sure you are on a page and try again.');
-          return;
-        }
+      // Open translate modal instead of sending directly
+      pendingMessage = formattedMessage;
+      openTranslateModal(formattedMessage);
+    });
+  }
 
-        const activeTab = tabs[0];
-        chrome.tabs.sendMessage(activeTab.id, {
-          action: 'insertMessage',
-          message: formattedMessage
-        }, (response) => {
-          if (chrome.runtime.lastError) {
-            injectContentScript(activeTab.id, formattedMessage);
-          } else if (response && response.success) {
-            window.close();
-          } else {
-            showError('Failed to insert message. Please try again.');
-          }
-        });
+  // Populate language select dropdown
+  function populateLanguages() {
+    languageSelect.innerHTML = '<option value="">Select a language...</option>';
+    supportedLanguages.forEach(lang => {
+      const option = document.createElement('option');
+      option.value = lang.code;
+      option.textContent = lang.name;
+      languageSelect.appendChild(option);
+    });
+  }
+
+  // Open translate modal
+  function openTranslateModal(message) {
+    pendingMessage = message;
+    translateError.style.display = 'none';
+    translateLoading.style.display = 'none';
+    translateBtn.disabled = true;
+    languageSelect.value = '';
+    translateModal.classList.add('active');
+  }
+
+  // Close translate modal
+  function closeTranslateModal() {
+    translateModal.classList.remove('active');
+    pendingMessage = null;
+  }
+
+  // Translate message using Chrome Translator API
+  async function translateMessage(targetLang) {
+    if (!pendingMessage || !targetLang) return;
+
+    translateBtn.disabled = true;
+    translateLoading.style.display = 'block';
+    translateError.style.display = 'none';
+
+    try {
+      // Check if Translator API is available (global object)
+      if (!('Translator' in self)) {
+        throw new Error('Chrome Translator API is not available. Please enable Chrome AI experimental flags in chrome://flags/#translator and restart Chrome.');
+      }
+
+      // Create translator with English as source language
+      const translator = await Translator.create({
+        sourceLanguage: 'en',
+        targetLanguage: targetLang
+      });
+
+      // Split message into paragraphs (preserve formatting)
+      const paragraphs = pendingMessage.split(/\n\n+/);
+      const translatedParagraphs = [];
+
+      // Translate each paragraph to preserve structure
+      for (const para of paragraphs) {
+        if (para.trim()) {
+          const translated = await translator.translate(para.trim());
+          translatedParagraphs.push(translated);
+        } else {
+          translatedParagraphs.push('');
+        }
+      }
+
+      // Join translated paragraphs with double newlines
+      const translatedText = translatedParagraphs.join('\n\n');
+
+      translateLoading.style.display = 'none';
+
+      if (translatedText) {
+        // Format: translated --- original (no brackets)
+        const formattedMessage = `${translatedText}\n-----------------------------------\n${pendingMessage}`;
+        insertFinalMessage(formattedMessage);
+      } else {
+        throw new Error('Translation failed. Please try again.');
+      }
+
+      closeTranslateModal();
+    } catch (error) {
+      translateLoading.style.display = 'none';
+      translateBtn.disabled = false;
+      translateError.textContent = error.message || 'Translation failed. Please try again.';
+      translateError.style.display = 'block';
+    }
+  }
+
+  // Insert message into page
+  function insertFinalMessage(formattedMessage) {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (!tabs || tabs.length === 0) {
+        showError('No active tab found.');
+        return;
+      }
+
+      const activeTab = tabs[0];
+      chrome.tabs.sendMessage(activeTab.id, {
+        action: 'insertMessage',
+        message: formattedMessage
+      }, (response) => {
+        if (chrome.runtime.lastError) {
+          injectContentScript(activeTab.id, formattedMessage);
+        } else if (response && response.success) {
+          window.close();
+        } else {
+          showError('Failed to insert message. Please try again.');
+        }
       });
     });
+  }
+
+  // Keep original only - send without translation
+  function sendOriginalOnly() {
+    if (pendingMessage) {
+      insertFinalMessage(pendingMessage);
+      closeTranslateModal();
+    }
   }
 
   function injectContentScript(tabId, message) {
@@ -502,6 +649,32 @@ document.addEventListener('DOMContentLoaded', () => {
   messageModal.addEventListener('click', (e) => {
     if (e.target === messageModal) {
       closeModal();
+    }
+  });
+
+  // Initialize language dropdown
+  populateLanguages();
+
+  // Translate modal event listeners
+  languageSelect.addEventListener('change', () => {
+    translateBtn.disabled = !languageSelect.value;
+  });
+
+  translateBtn.addEventListener('click', () => {
+    const targetLang = languageSelect.value;
+    if (targetLang) {
+      translateMessage(targetLang);
+    }
+  });
+
+  keepOriginalBtn.addEventListener('click', () => {
+    sendOriginalOnly();
+  });
+
+  // Close translate modal on overlay click
+  translateModal.addEventListener('click', (e) => {
+    if (e.target === translateModal) {
+      closeTranslateModal();
     }
   });
 });

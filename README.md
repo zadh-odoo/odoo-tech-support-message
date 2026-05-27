@@ -29,6 +29,7 @@ Includes **10 ready-to-use templates** with smart placeholders for dynamic conte
 | ✏️ **Custom Messages** | Add your own templates on the fly |
 | 🔄 **Edit/Reset** | Customize any message, reset to default anytime |
 | 💾 **Persistent Storage** | All data saved across browser sessions |
+| 🌐 **Translation Support** | Translate messages to 35+ languages using Chrome Translator API |
 
 ## 🛠️ Installation
 
@@ -84,13 +85,35 @@ git clone https://github.com/yourusername/odoo-tech-support-message.git
 | `content.js` | 🔌 Content script for Odoo integration |
 | `icon*.png` | 🎨 Extension icons |
 
+## 🌐 Translation Feature
+
+The extension supports translating messages to **35+ languages** using Chrome's built-in Translator API.
+
+### Requirements
+- Chrome 138+ (desktop) - Translator API is built-in, no flags needed
+
+### Supported Languages
+Arabic, Bulgarian, Chinese (Simplified/Traditional), Croatian, Czech, Danish, Dutch, English, Estonian, Finnish, French, German, Greek, Hebrew, Hindi, Hungarian, Indonesian, Italian, Japanese, Korean, Lithuanian, Latvian, Norwegian, Polish, Portuguese, Romanian, Russian, Slovak, Slovenian, Spanish, Swedish, Thai, Turkish, Ukrainian, Vietnamese
+
+### How It Works
+1. Click any message template
+2. Select target language from dropdown
+3. Click **Translate** to translate (preserves formatting)
+4. Or click **Keep Original Only** to send without translation
+
+Output format:
+```
+(translated message)
+-----------------------------------
+(original message)
+```
+
 ## 🚧 Missing Features (PRs Welcome!)
 
 These features are **not yet implemented** — want to contribute? Go for it! 💪
 
 - 🤖 **AI-generated messages** — Auto-generate support replies using AI and post directly to the Odoo chatter
 - 📝 **Log note support** — Create and insert log notes (not just messages)
-- 🌍 **Multi-language support** — Internationalize the UI and message templates
 
 > Found a bug? 🐛 Have an idea? 💡 Feel free to [open an issue](https://github.com/yourusername/odoo-tech-support-message/issues) or submit a PR!
 
