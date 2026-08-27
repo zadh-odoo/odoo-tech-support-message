@@ -94,7 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
     {
       id: 4,
       title: 'Fix Deployed',
-      content: "Hello,\n\n\nThank you for your patience.\n\nThe fix for the issue has now been successfully deployed to your database.\n\nCould you please verify on your end and confirm that everything is working as expected?\n\nPlease feel free to reach out if you have any questions or if you notice anything unusual.\n\nRegards,\n{name}\nTech Support",
+      content: "Hello,\n\nThank you for your patience.\n\nThe fix for the issue has now been successfully deployed to your database.\n\nCould you please verify on your end and confirm that everything is working as expected?\n\nPlease feel free to reach out if you have any questions or if you notice anything unusual.\n\nRegards,\n{name}\nTech Support",
       desc: 'Fix deployed to database'
     },
     {
@@ -106,13 +106,13 @@ document.addEventListener('DOMContentLoaded', () => {
     {
       id: 6,
       title: 'Known Bug',
-      content: "Hello,\n\n\nThank you for your patience.\n\nThis issue is a known bug in Odoo. We have forwarded it to the relevant bug-fix team for further investigation and resolution.\n\nWe appreciate you bringing this matter to our attention. Rest assured, we will notify you as soon as the issue is resolved.\n\nIf you have any additional questions in the meantime, please feel free to reach out.\n\nRegards,\n{name}\nTech Support",
+      content: "Hello,\n\nThank you for your patience.\n\nThis issue is a known bug in Odoo. We have forwarded it to the relevant bug-fix team for further investigation and resolution.\n\nWe appreciate you bringing this matter to our attention. Rest assured, we will notify you as soon as the issue is resolved.\n\nIf you have any additional questions in the meantime, please feel free to reach out.\n\nRegards,\n{name}\nTech Support",
       desc: 'Known bug reported'
     },
     {
       id: 7,
       title: 'View Fix Applied',
-      content: "Hello,\n\nI am {name} from Tech Support, and I will be assisting you with this issue.\n\nUpon investigation, I found that the issue [Explain an issue here] was caused by [Explain cause here].\n\nTo fix this issue:\n\n[Step 1 here]\n\n[Step 2 here]\n\n[Step 3 here]\n\nAfter performing these steps, the issue will be resolved.\n\nI have already applied this fix on your duplicate database for verification purposes:\n\n[link here]\n\nPlease check and confirm that everything is working as expected.\n\n\nPlease let me know if you need any further assistance.\n\nThank you.\n\nRegards,\n{name}\nTech Support",
+      content: "Hello,\n\nI am {name} from Tech Support, and I will be assisting you with this issue.\n\nUpon investigation, I found that the issue [Explain an issue here] was caused by [Explain cause here].\n\nTo fix this issue:\n\n[Step 1 here]\n\n[Step 2 here]\n\n[Step 3 here]\n\nAfter performing these steps, the issue will be resolved.\n\nI have already applied this fix on your duplicate database for verification purposes:\n\n[link here]\n\nPlease check and confirm that everything is working as expected.\n\nPlease let me know if you need any further assistance.\n\nThank you.\n\nRegards,\n{name}\nTech Support",
       desc: 'View/inactive fix applied'
     },
     {
@@ -130,7 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
     {
       id: 10,
       title: 'Staging Verification',
-      content: "Hello,\n\n\nI am {name} from Tech Support. I will be assisting you with this issue.\n\nI have identified the issue and applied the appropriate fix on the staging environment for verification purposes:\n\n[link here]\n\nPlease check and confirm that everything works as expected in this database.\n\n\nOnce you confirm, I will apply the same fix on the production environment as well.\n\n\nThank you.\n\nRegards,\n{name}",
+      content: "Hello,\n\nI am {name} from Tech Support. I will be assisting you with this issue.\n\nI have identified the issue and applied the appropriate fix on the staging environment for verification purposes:\n[link here]\n\nPlease check and confirm that everything works as expected in this database.\n\nOnce you confirm, I will apply the same fix on the production environment as well.\n\nThank you.\n\nRegards,\n{name}",
       desc: 'Staging environment fix'
     }
   ];
