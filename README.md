@@ -113,7 +113,6 @@ Output format:
 These features are **not yet implemented** — want to contribute? Go for it! 💪
 
 - 🤖 **AI-generated messages** — Auto-generate support replies using AI and post directly to the Odoo chatter
-- 📝 **Log note support** — Create and insert log notes (not just messages)
 
 > Found a bug? 🐛 Have an idea? 💡 Feel free to [open an issue](https://github.com/yourusername/odoo-tech-support-message/issues) or submit a PR!
 
