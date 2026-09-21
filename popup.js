@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let pendingMessage = null;
   let editingMessageId = null;
   let editingMessageIsDefault = false;
-  let nextCustomId = 11;
+  let nextCustomId = 16;
 
   // Supported languages from Chrome Translator API
   const supportedLanguages = [
@@ -132,12 +132,42 @@ document.addEventListener('DOMContentLoaded', () => {
       title: 'Staging Verification',
       content: "Hello,\n\nI am {name} from Tech Support. I will be assisting you with this issue.\n\nI have identified the issue and applied the appropriate fix on the staging environment for verification purposes:\n[link here]\n\nPlease check and confirm that everything works as expected in this database.\n\nOnce you confirm, I will apply the same fix on the production environment as well.\n\nThank you.\n\nRegards,\n{name}",
       desc: 'Staging environment fix'
+    },
+    {
+      id: 11,
+      title: 'Saas-ops Test DB',
+      content: "Hello,\n\nA test database is available at : [link here]\n\nIts outgoing mail server and scheduled actions are disabled so that you can test your business flows without the risk of sending emails to your customers. If you have other external integrations installed (delivery carrier, bank connection, government connector, etc...) don't forget to deactivate them before testing.\n\nNote that this is a TEST database, please do not start to work with it as if it was your production, there are some aspects of it that have been neutralized in a way that is not designed to be easily reversible.\n\nYou can also test the upgrade via the \"my subscription\" option, in the user menu (in the top right)\n\nI'll await your explicit green light for the production upload.\n\nBest regards,\n{name}",
+      desc: 'Test database ready'
+    },
+    {
+      id: 12,
+      title: 'Saas-ops Production',
+      content: "Hello,\n\nProduction database : [link here]\n\nCould you please verify everything and confirm that it looks correct? If you encounter any issues, please let me know.\n\nYou have ~2 weeks to link your subscription to it. Enter your subscription code in the notification at the top of the app switcher of the SaaS database. Next, click the \"Send an email\" link in the same notification and have the subscription owner confirm the move.\n\nIf you encounter abnormal behaviours that you think are linked to the change of hosting, get back to me on this mail thread.\n\nIf you have custom domain names to set up, they will need to be configured through the \"my databases\" portal on odoo.com (you will need to be connected with the admin user). See the documentation here: https://www.odoo.com/documentation/19.0/applications/websites/website/configuration/domain_names.html\n\nDon't forget to verify that the DNS configuration is correct.\n\nIf you have custom outgoing or incoming mail servers, you will need to reconfigure them (the standard mail server provided with the SaaS is used by default)\n\nBest regards,\n{name}",
+      desc: 'Production database ready'
+    },
+    {
+      id: 13,
+      title: 'Saas-ops User Creation',
+      content: "Hello,\n\nI noticed that the administrator email [email here] does not currently have a corresponding user account on Odoo.com. Could you please create an Odoo.com user with this email address?\n\nYou can register your email address using the following link: https://www.odoo.com/web/signup\n\nOnce the user has been created, I will be able to link it properly and send you the testing database link so that you can validate everything from your side.\n\nPlease let me know once the account has been created.\n\nBest Regards,\n{name}",
+      desc: 'Request Odoo.com user creation'
+    },
+    {
+      id: 14,
+      title: 'Positive Feedback',
+      content: "Hello,\n\nThank you for your positive feedback. We are pleased that we were able to assist you in a timely manner and handle all of your concerns.\n\nAs we close this ticket, if you face any problems or issues, please open a new ticket at https://www.odoo.com/help and we will assist you again.\n\nThank you very much!\n\nBest Regards,\n{name}",
+      desc: 'Thank you for positive feedback'
+    },
+    {
+      id: 15,
+      title: 'Saas-ops Custom Module',
+      content: "Hello,\n\nI checked the database dump you shared and noticed that it still contains custom modules named '[module names here]'.\n\nAs SaaS databases cannot contain custom modules, could you please remove this module, create an updated database dump, and share it with us?\n\nOnce I receive the updated dump, I will proceed with the next steps.\n\nThank you,\n{name}",
+      desc: 'Remove custom modules from dump'
     }
   ];
 
   // Load saved name and messages on startup
   chrome.storage.local.get(['techSupportName', 'customMessages', 'editedMessages', 'messagesVersion'], (result) => {
-    const currentVersion = 2; // Increment when updating default messages
+    const currentVersion = 3; // Increment when updating default messages
     const storedVersion = result.messagesVersion || 1;
 
     // Clear edited messages if version changed (new defaults)
