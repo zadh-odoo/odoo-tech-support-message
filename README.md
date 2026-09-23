@@ -30,6 +30,7 @@ Includes **10 ready-to-use templates** with smart placeholders for dynamic conte
 | 🔄 **Edit/Reset** | Customize any message, reset to default anytime |
 | 💾 **Persistent Storage** | All data saved across browser sessions |
 | 🌐 **Translation Support** | Translate messages to 35+ languages using Chrome Translator API |
+| 🤖 **AI Rewrite** | Rewrites your draft for clarity & professionalism using Groq API |
 
 ## 🛠️ Installation
 
@@ -108,11 +109,25 @@ Output format:
 (original message)
 ```
 
+## 🤖 AI Rewrite Feature
+
+Rewrites the text already typed in the Odoo composer to improve clarity, grammar, and professionalism — with minimal changes.
+
+### Setup
+1. Go to [https://groq.com/](https://groq.com/) and sign up / log in
+2. Generate an API key from the Groq dashboard
+3. Open the extension popup → paste the key under **Enter Groq API Key** → click **Save API Key**
+
+### How It Works
+1. Type your message in the Odoo composer
+2. Click the **✨ AI Rewrite** button next to the translate button
+3. The text is rewritten in place — review and send
+
+Powered by Groq's fast inference (`openai/gpt-oss-20b`).
+
 ## 🚧 Missing Features (PRs Welcome!)
 
 These features are **not yet implemented** — want to contribute? Go for it! 💪
-
-- 🤖 **AI-generated messages** — Auto-generate support replies using AI and post directly to the Odoo chatter
 
 > Found a bug? 🐛 Have an idea? 💡 Feel free to [open an issue](https://github.com/zadh-odoo/odoo-tech-support-message/issues) or submit a PR!
 

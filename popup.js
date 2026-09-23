@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const saveNameBtn = document.getElementById('saveNameBtn');
   const savedNameSpan = document.getElementById('savedName');
   const editNameLink = document.getElementById('editName');
+  const saveApiKeyBtn = document.getElementById('saveApiKeyBtn');
 
   // Modal elements
   const messageModal = document.getElementById('messageModal');
@@ -189,35 +190,64 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Save name button click
-  saveNameBtn.addEventListener('click', () => {
-    const name = userNameInput.value.trim();
-    if (name) {
-      chrome.storage.local.set({ techSupportName: name }, () => {
-        showWelcomeSection(name);
-        renderMessages({}, []);
-      });
+// Save name button click
+saveNameBtn.addEventListener('click', () => {
+  const name = userNameInput.value.trim();
+  if (name) {
+    chrome.storage.local.set({ techSupportName: name }, () => {
+      showWelcomeSection(name);
+      renderMessages({}, []);
+    });
+  }
+});
+
+// Save API key button click
+saveApiKeyBtn.addEventListener('click', () => {
+  const apiKey = apiKeyInput.value.trim();
+  const apiKeyStatus = document.getElementById('apiKeyStatus');
+  if (apiKey) {
+    chrome.storage.local.set({ groqApiKey: apiKey }, () => {
+      apiKeyStatus.textContent = 'Groq API key saved';
+      apiKeyStatus.style.color = '#1dc959';
+    });
+  } else {
+    chrome.storage.local.remove('groqApiKey', () => {
+      apiKeyStatus.textContent = 'API key removed';
+      apiKeyStatus.style.color = '#6B707F';
+    });
+  }
+});
+
+// Edit name link click (name only)
+editNameLink.addEventListener('click', () => {
+  chrome.storage.local.get(['techSupportName'], (result) => {
+    userNameInput.value = result.techSupportName || '';
+    nameSection.style.display = 'block';
+    welcomeSection.style.display = 'none';
+    messageList.classList.remove('active');
+    emptyState.style.display = 'none';
+  });
+});
+
+function showWelcomeSection(name) {
+  savedNameSpan.textContent = name;
+  nameSection.style.display = 'none';
+  welcomeSection.style.display = 'block';
+  messageList.classList.add('active');
+  emptyState.style.display = 'none';
+
+  // Load API key into input and show status
+  const apiKeyStatus = document.getElementById('apiKeyStatus');
+  chrome.storage.local.get(['groqApiKey'], (result) => {
+    apiKeyInput.value = result.groqApiKey || '';
+    if (result.groqApiKey) {
+      apiKeyStatus.textContent = 'Groq API key saved';
+      apiKeyStatus.style.color = '#1dc959';
+    } else {
+      apiKeyStatus.textContent = '';
     }
   });
-
-  // Edit name link click
-  editNameLink.addEventListener('click', () => {
-    chrome.storage.local.get(['techSupportName'], (result) => {
-      userNameInput.value = result.techSupportName || '';
-      nameSection.style.display = 'block';
-      welcomeSection.style.display = 'none';
-      messageList.classList.remove('active');
-      emptyState.style.display = 'none';
-    });
-  });
-
-  function showWelcomeSection(name) {
-    savedNameSpan.textContent = name;
-    nameSection.style.display = 'none';
-    welcomeSection.style.display = 'block';
-    messageList.classList.add('active');
-    emptyState.style.display = 'none';
-  }
+}
 
   function getMessageContent(msg, editedMessages, customMessages) {
     // Check if it's a custom message
