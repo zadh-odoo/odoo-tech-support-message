@@ -24,6 +24,8 @@ function insertMessageIntoComposer(message) {
         .replace(/\\n/g, '\n')
         .replace(/\\t/g, '\t');
 
+    message = markdownToPlainText(message);
+
     const sendButton = document.querySelector('.o-mail-Chatter-sendMessage.btn');
     const isEditor = document.querySelector('.o-mail-Composer-input.o-mail-Composer-bg');
 
@@ -99,6 +101,7 @@ function addTranslateButton() {
 
 
 const translationLanguages = [
+    { code: 'en', name: 'English' },
     { code: 'es', name: 'Spanish' },
     { code: 'fr', name: 'French' },
     { code: 'de', name: 'German' },
@@ -124,36 +127,57 @@ function openTranslateMenu(button) {
     const menu = document.createElement('div');
     menu.className = 'tech-support-translate-menu';
     menu.innerHTML = `
-        <div class="tech-translate-title">Translate message</div>
+        <div class="tech-translate-title">Translate &amp; Rewrite message</div>
         <select class="tech-translate-language">
-            <option value="">Select language</option>
+            <option value="">Select a language...</option>
         </select>
-        <button type="button" class="tech-translate-submit">Translate</button>
+        <label class="tech-translate-multilingual">
+            <input type="checkbox" class="tech-multilingual-check"> Multilingual — include original version
+        </label>
+        <button type="button" class="tech-translate-submit">Translate &amp; Rewrite</button>
         <div class="tech-translate-status"></div>
     `;
 
     menu.style.position = 'fixed';
     menu.style.zIndex = '999999';
-    menu.style.background = '#ffffff';
-    menu.style.border = '1px solid #d0d0d0';
+    menu.style.background = '#1B1D26';
+    menu.style.border = '1px solid #3C3E4B';
     menu.style.borderRadius = '8px';
     menu.style.padding = '12px';
-    menu.style.width = '220px';
+    menu.style.width = '340px';
     menu.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.25)';
 
     const title = menu.querySelector('.tech-translate-title');
     title.style.fontSize = '13px';
     title.style.fontWeight = '600';
     title.style.marginBottom = '8px';
-    title.style.color = '#333';
+    title.style.color = '#E4E4E4';
 
     const select = menu.querySelector('.tech-translate-language');
     select.style.width = '100%';
     select.style.padding = '7px';
-    select.style.border = '1px solid #ccc';
+    select.style.border = '1px solid #3C3E4B';
+    select.style.background = '#262A36';
+    select.style.color = '#E4E4E4';
     select.style.borderRadius = '5px';
     select.style.marginBottom = '8px';
     select.style.fontSize = '13px';
+
+    const multilingualLabel = menu.querySelector('.tech-translate-multilingual');
+    multilingualLabel.style.display = 'flex';
+    multilingualLabel.style.alignItems = 'center';
+    multilingualLabel.style.gap = '6px';
+    multilingualLabel.style.fontSize = '12px';
+    multilingualLabel.style.marginBottom = '8px';
+    multilingualLabel.style.cursor = 'pointer';
+    multilingualLabel.style.color = '#B1B3BC';
+
+    const multilingualCheck = menu.querySelector('.tech-multilingual-check');
+    multilingualCheck.style.width = '14px';
+    multilingualCheck.style.height = '14px';
+    multilingualCheck.style.margin = '0';
+    multilingualCheck.style.cursor = 'pointer';
+    multilingualCheck.style.accentColor = '#02c7b5';
 
     translationLanguages.forEach(language => {
         const option = document.createElement('option');
@@ -168,24 +192,27 @@ function openTranslateMenu(button) {
     translateButton.style.border = 'none';
     translateButton.style.borderRadius = '5px';
     translateButton.style.cursor = 'pointer';
-    translateButton.style.background = '#714B67';
-    translateButton.style.color = '#ffffff';
+    translateButton.style.background = '#02c7b5';
+    translateButton.style.color = '#000';
     translateButton.style.fontSize = '13px';
 
     const status = menu.querySelector('.tech-translate-status');
     status.style.fontSize = '11px';
     status.style.marginTop = '7px';
-    status.style.color = '#666';
+    status.style.color = '#6B707F';
 
     document.body.appendChild(menu);
 
     const rect = button.getBoundingClientRect();
-    let left = rect.left - 185;
+    const menuW = menu.offsetWidth;
+    const menuH = menu.offsetHeight;
+    let left = rect.right - menuW;
     let top = rect.bottom + 8;
 
     if (left < 10) left = 10;
-    if (left + 220 > window.innerWidth - 10) left = window.innerWidth - 230;
-    if (top + 160 > window.innerHeight) top = rect.top - 170;
+    if (left + menuW > window.innerWidth - 10) left = window.innerWidth - menuW - 10;
+    if (top + menuH > window.innerHeight - 10) top = rect.top - menuH - 8;
+    if (top < 10) top = 10;
 
     menu.style.left = `${left}px`;
     menu.style.top = `${top}px`;
@@ -210,19 +237,33 @@ function openTranslateMenu(button) {
         }
 
         translateButton.disabled = true;
-        status.textContent = 'Translating...';
+        status.textContent = 'Rewriting & translating...';
 
         try {
-            const translatedText = await translateText(originalText, targetLanguage);
-            if (!translatedText || !translatedText.trim()) {
+            const { groqApiKey } = await chrome.storage.local.get(['groqApiKey']);
+            if (!groqApiKey) {
+                throw new Error('Groq API key is not set. Save it in the extension popup first.');
+            }
+
+            const multilingual = multilingualCheck.checked;
+            const { rewritten, translated } = await rewriteAndTranslate(originalText, targetLanguage, groqApiKey);
+
+            if (!translated || !translated.trim()) {
                 throw new Error('Translation returned empty text.');
             }
 
-            replaceComposerText(editor, translatedText);
-            status.textContent = 'Translation completed.';
+            let output;
+            if (multilingual) {
+                output = `${translated}\n\n--------------Translated from English -------------------------\n\n${rewritten}`;
+            } else {
+                output = translated;
+            }
+
+            replaceComposerText(editor, output);
+            status.textContent = 'Done.';
             setTimeout(() => { menu.remove(); }, 400);
         } catch (error) {
-            console.error('Translation error:', error);
+            console.warn('Translation error:', error);
             status.textContent = error.message || 'Translation failed.';
             translateButton.disabled = false;
         }
@@ -239,36 +280,111 @@ function openTranslateMenu(button) {
 }
 
 
-async function translateText(text, targetLanguage) {
-    if (!('Translator' in self)) {
-        throw new Error(
-            'Chrome Translator API is not available. ' +
-            'Please use a Chrome version that supports ' +
-            'the built-in Translator API.'
-        );
-    }
+async function rewriteAndTranslate(text, targetLanguageCode, apiKey) {
+    const language = translationLanguages.find(l => l.code === targetLanguageCode);
+    const languageName = language ? language.name : targetLanguageCode;
 
-    const translator = await Translator.create({
-        sourceLanguage: 'en',
-        targetLanguage: targetLanguage
+    const prompt = `You are a professional support message editor and translator.
+
+Step 1 - Rewrite: Improve the following message for clarity, grammar, and professionalism. Keep the meaning intact and keep any placeholders unchanged. Do not add or remove significant content.
+
+Step 2 - Translate: Translate the rewritten message into ${languageName}. Keep placeholders unchanged in the translation.
+
+Original message:
+"""
+${text}
+"""
+
+Respond with valid JSON only, no markdown, in this exact format:
+{"rewritten": "Rewritten version in the original language", "translated": "Translated version"}`;
+
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+            model: 'openai/gpt-oss-20b',
+            messages: [{ role: 'user', content: prompt }],
+            temperature: 0.3,
+            max_tokens: 1024,
+        })
     });
 
-    const paragraphs = text.split(/\n\n+/);
-    const translatedParagraphs = [];
-
-    for (const paragraph of paragraphs) {
-        if (paragraph.trim()) {
-            const translated = await translator.translate(paragraph.trim());
-            translatedParagraphs.push(translated);
-        } else {
-            translatedParagraphs.push('');
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        if (response.status === 401 || response.status === 403) {
+            throw new Error('Invalid Groq API key. Please update it in the extension popup.');
         }
+        throw new Error(`Groq API error: ${errorData.error?.message || response.status}`);
     }
 
-    return translatedParagraphs.join('\n\n');
+    const result = await response.json();
+    let content = result.choices?.[0]?.message?.content;
+    if (!content) {
+        throw new Error('No response from Groq API');
+    }
+
+    content = content.trim();
+    if (content.startsWith('```')) {
+        content = content.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '').trim();
+    }
+
+    let data;
+    try {
+        data = JSON.parse(content);
+    } catch (e) {
+        const match = content.match(/\{[\s\S]*\}/);
+        if (!match) throw new Error('Failed to parse translation response.');
+        data = JSON.parse(match[0]);
+    }
+
+    if (!data.rewritten || !data.translated) {
+        throw new Error('Incomplete translation response.');
+    }
+
+    return { rewritten: data.rewritten.trim(), translated: data.translated.trim() };
+}
+
+function isMarkdownCapableEditor(editor) {
+    if (!editor) return false;
+    return !!(
+        editor.closest('.modal') ||
+        editor.closest('.wysiwyg-local-overlay') ||
+        editor.closest('.wysiwyg') ||
+        editor.closest('.note-editor')
+    );
+}
+
+function markdownToPlainText(md) {
+    if (!md) return md;
+    const SEP = '--------------Translated from English -------------------------';
+    return md.split(SEP).map((part) => {
+        let text = part;
+        text = text.replace(/```[\s\S]*?```/g, (block) =>
+            block.replace(/```[^\n]*\n?/g, '').replace(/```$/g, '')
+        );
+        text = text.replace(/`([^`\n]+)`/g, '$1');
+        text = text.replace(/!\[([^\]]*)\]\([^)]*\)/g, '$1');
+        text = text.replace(/\[([^\]]+)\]\([^)]*\)/g, '$1');
+        text = text.replace(/(\*\*\*|___)(.*?)\1/g, '$2');
+        text = text.replace(/(\*\*|__)(.*?)\1/g, '$2');
+        text = text.replace(/(\*|_)(.*?)\1/g, '$2');
+        text = text.replace(/^#{1,6}\s+/gm, '');
+        text = text.replace(/^\s*>\s?/gm, '');
+        text = text.replace(/^\s*[-*+]\s+/gm, '');
+        text = text.replace(/^\s*\d+\.\s+/gm, '');
+        text = text.replace(/^\s{0,3}([-*_])(?:\s*\1){2,}\s*$/gm, '');
+        return text;
+    }).join(SEP);
 }
 
 function replaceComposerText(editor, text) {
+    if (!isMarkdownCapableEditor(editor)) {
+        text = markdownToPlainText(text);
+    }
+
     editor.focus();
     document.execCommand('selectAll', false, null);
     document.execCommand('delete', false, null);
@@ -397,7 +513,7 @@ async function performAIRewriteSilent(button, apiKey) {
         const rewrittenText = await rewriteWithGroq(originalText, apiKey);
         replaceComposerText(editor, rewrittenText);
     } catch (error) {
-        console.error('AI rewrite error:', error);
+        console.warn('AI rewrite error:', error);
     }
 }
 
@@ -430,14 +546,14 @@ function addAIRewriteButton() {
             const result = await chrome.storage.local.get(['groqApiKey']);
             apiKey = result.groqApiKey;
         } catch (error) {
-            console.error('Failed to get API key from storage:', error);
+            console.warn('Failed to get API key from storage:', error);
         }
 
         if (apiKey && typeof apiKey === 'string' && apiKey.trim() !== '') {
             try {
                 await performAIRewriteSilent(button, apiKey.trim());
             } catch (error) {
-                console.error('AI rewrite error:', error);
+                console.warn('AI rewrite error:', error);
             }
         }
     });
@@ -464,12 +580,22 @@ function matchFooterButtonSize(btn, footer) {
     }
 }
 
+function hasWysiwygEditor(root) {
+    if (!root) return false;
+    return !!root.querySelector('.wysiwyg, .note-editor, [contenteditable="true"], .o-mail-Composer-input');
+}
+
 function addModalFooterButtons() {
     const footers = document.querySelectorAll(
         '.modal-footer.d-empty-none, .wysiwyg-local-overlay .modal-footer'
     );
 
     footers.forEach((footer) => {
+        const modalRoot = footer.closest('.modal') || footer.closest('.wysiwyg-local-overlay');
+        if (!hasWysiwygEditor(modalRoot)) {
+            return;
+        }
+
         if (!footer.querySelector('.tech-support-translate-btn')) {
             const translateBtn = createFooterButton(
                 'tech-support-translate-btn',
@@ -500,14 +626,14 @@ function addModalFooterButtons() {
                     const result = await chrome.storage.local.get(['groqApiKey']);
                     apiKey = result.groqApiKey;
                 } catch (error) {
-                    console.error('Failed to get API key from storage:', error);
+                    console.warn('Failed to get API key from storage:', error);
                 }
 
                 if (apiKey && typeof apiKey === 'string' && apiKey.trim() !== '') {
                     try {
                         await performAIRewriteSilent(aiBtn, apiKey.trim());
                     } catch (error) {
-                        console.error('AI rewrite error:', error);
+                        console.warn('AI rewrite error:', error);
                     }
                 }
             });
