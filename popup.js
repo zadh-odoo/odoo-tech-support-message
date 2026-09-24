@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const saveNameBtn = document.getElementById('saveNameBtn');
   const savedNameSpan = document.getElementById('savedName');
   const editNameLink = document.getElementById('editName');
+  const saveApiKeyBtn = document.getElementById('saveApiKeyBtn');
 
   // Modal elements
   const messageModal = document.getElementById('messageModal');
@@ -25,14 +26,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const keepOriginalBtn = document.getElementById('keepOriginalBtn');
   const translateError = document.getElementById('translateError');
   const translateLoading = document.getElementById('translateLoading');
+  const multilingualCheck = document.getElementById('multilingualCheck');
 
   let pendingMessage = null;
   let editingMessageId = null;
   let editingMessageIsDefault = false;
   let nextCustomId = 16;
 
-  // Supported languages from Chrome Translator API
+  // Supported languages for translation
   const supportedLanguages = [
+    { code: 'en', name: 'English' },
     { code: 'ar', name: 'Arabic' },
     { code: 'bg', name: 'Bulgarian' },
     { code: 'zh-CN', name: 'Chinese (Simplified)' },
@@ -41,7 +44,6 @@ document.addEventListener('DOMContentLoaded', () => {
     { code: 'cs', name: 'Czech' },
     { code: 'da', name: 'Danish' },
     { code: 'nl', name: 'Dutch' },
-    { code: 'en', name: 'English' },
     { code: 'et', name: 'Estonian' },
     { code: 'fi', name: 'Finnish' },
     { code: 'fr', name: 'French' },
@@ -189,35 +191,86 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Save name button click
-  saveNameBtn.addEventListener('click', () => {
-    const name = userNameInput.value.trim();
-    if (name) {
-      chrome.storage.local.set({ techSupportName: name }, () => {
-        showWelcomeSection(name);
-        renderMessages({}, []);
+// Save name button click
+saveNameBtn.addEventListener('click', () => {
+  const name = userNameInput.value.trim();
+  if (name) {
+    chrome.storage.local.set({ techSupportName: name }, () => {
+      showWelcomeSection(name);
+      renderMessages({}, []);
+    });
+  }
+});
+
+// Save API key button click (with validation)
+saveApiKeyBtn.addEventListener('click', async () => {
+  const apiKey = apiKeyInput.value.trim();
+  const apiKeyStatus = document.getElementById('apiKeyStatus');
+  if (apiKey) {
+    apiKeyStatus.textContent = 'Validating API key...';
+    apiKeyStatus.style.color = '#6B707F';
+    saveApiKeyBtn.disabled = true;
+    try {
+      const res = await fetch('https://api.groq.com/openai/v1/models', {
+        headers: { 'Authorization': `Bearer ${apiKey}` }
       });
+      if (res.ok) {
+        chrome.storage.local.set({ groqApiKey: apiKey }, () => {
+          apiKeyStatus.textContent = 'Groq API key saved';
+          apiKeyStatus.style.color = '#1dc959';
+        });
+      } else if (res.status === 401 || res.status === 403) {
+        apiKeyStatus.textContent = 'Invalid API key. Please check and try again.';
+        apiKeyStatus.style.color = '#b83232';
+      } else {
+        const err = await res.json().catch(() => ({}));
+        apiKeyStatus.textContent = err.error?.message || `Validation failed (${res.status}). Please try again.`;
+        apiKeyStatus.style.color = '#b83232';
+      }
+    } catch (e) {
+      apiKeyStatus.textContent = 'Could not validate key. Check your connection and try again.';
+      apiKeyStatus.style.color = '#FBB56A';
+    } finally {
+      saveApiKeyBtn.disabled = false;
+    }
+  } else {
+    chrome.storage.local.remove('groqApiKey', () => {
+      apiKeyStatus.textContent = 'API key removed';
+      apiKeyStatus.style.color = '#6B707F';
+    });
+  }
+});
+
+// Edit name link click (name only)
+editNameLink.addEventListener('click', () => {
+  chrome.storage.local.get(['techSupportName'], (result) => {
+    userNameInput.value = result.techSupportName || '';
+    nameSection.style.display = 'block';
+    welcomeSection.style.display = 'none';
+    messageList.classList.remove('active');
+    emptyState.style.display = 'none';
+  });
+});
+
+function showWelcomeSection(name) {
+  savedNameSpan.textContent = name;
+  nameSection.style.display = 'none';
+  welcomeSection.style.display = 'block';
+  messageList.classList.add('active');
+  emptyState.style.display = 'none';
+
+  // Load API key into input and show status
+  const apiKeyStatus = document.getElementById('apiKeyStatus');
+  chrome.storage.local.get(['groqApiKey'], (result) => {
+    apiKeyInput.value = result.groqApiKey || '';
+    if (result.groqApiKey) {
+      apiKeyStatus.textContent = 'Groq API key saved';
+      apiKeyStatus.style.color = '#1dc959';
+    } else {
+      apiKeyStatus.textContent = '';
     }
   });
-
-  // Edit name link click
-  editNameLink.addEventListener('click', () => {
-    chrome.storage.local.get(['techSupportName'], (result) => {
-      userNameInput.value = result.techSupportName || '';
-      nameSection.style.display = 'block';
-      welcomeSection.style.display = 'none';
-      messageList.classList.remove('active');
-      emptyState.style.display = 'none';
-    });
-  });
-
-  function showWelcomeSection(name) {
-    savedNameSpan.textContent = name;
-    nameSection.style.display = 'none';
-    welcomeSection.style.display = 'block';
-    messageList.classList.add('active');
-    emptyState.style.display = 'none';
-  }
+}
 
   function getMessageContent(msg, editedMessages, customMessages) {
     // Check if it's a custom message
@@ -421,6 +474,7 @@ document.addEventListener('DOMContentLoaded', () => {
     translateLoading.style.display = 'none';
     translateBtn.disabled = true;
     languageSelect.value = '';
+    multilingualCheck.checked = false;
     translateModal.classList.add('active');
   }
 
@@ -430,7 +484,7 @@ document.addEventListener('DOMContentLoaded', () => {
     pendingMessage = null;
   }
 
-  // Translate message using Chrome Translator API
+  // Translate & rewrite message using Groq API (no browser Translator API)
   async function translateMessage(targetLang) {
     if (!pendingMessage || !targetLang) return;
 
@@ -439,44 +493,28 @@ document.addEventListener('DOMContentLoaded', () => {
     translateError.style.display = 'none';
 
     try {
-      // Check if Translator API is available (global object)
-      if (!('Translator' in self)) {
-        throw new Error('Chrome Translator API is not available. Please enable Chrome AI experimental flags in chrome://flags/#translator and restart Chrome.');
+      const { groqApiKey } = await chrome.storage.local.get(['groqApiKey']);
+      if (!groqApiKey) {
+        throw new Error('Groq API key is not set. Please save your API key first.');
       }
 
-      // Create translator with English as source language
-      const translator = await Translator.create({
-        sourceLanguage: 'en',
-        targetLanguage: targetLang
-      });
-
-      // Split message into paragraphs (preserve formatting)
-      const paragraphs = pendingMessage.split(/\n\n+/);
-      const translatedParagraphs = [];
-
-      // Translate each paragraph to preserve structure
-      for (const para of paragraphs) {
-        if (para.trim()) {
-          const translated = await translator.translate(para.trim());
-          translatedParagraphs.push(translated);
-        } else {
-          translatedParagraphs.push('');
-        }
-      }
-
-      // Join translated paragraphs with double newlines
-      const translatedText = translatedParagraphs.join('\n\n');
+      const multilingual = multilingualCheck.checked;
+      const { rewritten, translated } = await rewriteAndTranslate(pendingMessage, targetLang, groqApiKey);
 
       translateLoading.style.display = 'none';
 
-      if (translatedText) {
-        // Format: translated --- original (no brackets)
-        const formattedMessage = `${translatedText}\n-----------------------------------\n${pendingMessage}`;
-        insertFinalMessage(formattedMessage);
-      } else {
+      if (!translated || !translated.trim()) {
         throw new Error('Translation failed. Please try again.');
       }
 
+      let formattedMessage;
+      if (multilingual) {
+        formattedMessage = `${translated}\n\n--------------Translated from English -------------------------\n\n${rewritten}`;
+      } else {
+        formattedMessage = translated;
+      }
+
+      insertFinalMessage(formattedMessage);
       closeTranslateModal();
     } catch (error) {
       translateLoading.style.display = 'none';
@@ -484,6 +522,77 @@ document.addEventListener('DOMContentLoaded', () => {
       translateError.textContent = error.message || 'Translation failed. Please try again.';
       translateError.style.display = 'block';
     }
+  }
+
+  function getLanguageName(code) {
+    const lang = supportedLanguages.find(l => l.code === code);
+    return lang ? lang.name : code;
+  }
+
+  async function rewriteAndTranslate(text, targetLangCode, apiKey) {
+    const langName = getLanguageName(targetLangCode);
+
+    const prompt = `You are a professional support message editor and translator.
+
+Step 1 - Rewrite: Improve the following English customer support message for clarity, grammar, and professionalism. Keep the meaning intact and keep placeholders like {name} exactly as they are. Do not add or remove significant content.
+
+Step 2 - Translate: Translate the rewritten message into ${langName}. Keep placeholders like {name} unchanged in the translation.
+
+Original message:
+"""
+${text}
+"""
+
+Respond with valid JSON only, no markdown, in this exact format:
+{"rewritten": "English rewritten version", "translated": "Translated version"}`;
+
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: 'openai/gpt-oss-20b',
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.3,
+        max_tokens: 1024,
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      if (response.status === 401 || response.status === 403) {
+        throw new Error('Invalid Groq API key. Please update it in the extension popup.');
+      }
+      throw new Error(`Groq API error: ${errorData.error?.message || response.status}`);
+    }
+
+    const result = await response.json();
+    let content = result.choices?.[0]?.message?.content;
+    if (!content) {
+      throw new Error('No response from Groq API');
+    }
+
+    content = content.trim();
+    if (content.startsWith('```')) {
+      content = content.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '').trim();
+    }
+
+    let data;
+    try {
+      data = JSON.parse(content);
+    } catch (e) {
+      const match = content.match(/\{[\s\S]*\}/);
+      if (!match) throw new Error('Failed to parse translation response.');
+      data = JSON.parse(match[0]);
+    }
+
+    if (!data.rewritten || !data.translated) {
+      throw new Error('Incomplete translation response.');
+    }
+
+    return { rewritten: data.rewritten.trim(), translated: data.translated.trim() };
   }
 
   // Insert message into page

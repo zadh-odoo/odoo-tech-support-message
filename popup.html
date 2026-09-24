@@ -140,6 +140,62 @@
       color: var(--o-enterprise-action);
     }
 
+    .api-key-section {
+      margin-bottom: 16px;
+      padding: 10px 12px;
+      background: var(--o-gray-200);
+      border-radius: 6px;
+    }
+
+    .api-key-section input {
+      width: 100%;
+      padding: 8px 12px;
+      background: var(--o-gray-100);
+      border: 1px solid var(--o-gray-300);
+      border-radius: 6px;
+      font-size: 13px;
+      color: var(--o-gray-900);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .api-key-section input::placeholder {
+      color: var(--o-gray-500);
+    }
+
+    .api-key-section input:focus {
+      border-color: var(--o-enterprise-action);
+      box-shadow: 0 0 0 2px rgba(2, 199, 181, 0.15);
+    }
+
+    .btn-save-api {
+      width: 100%;
+      margin-top: 8px;
+      padding: 7px 16px;
+      background: var(--o-enterprise-action);
+      color: var(--o-black);
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 500;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    .btn-save-api:hover {
+      background: #02b5a8;
+    }
+
+    .btn-save-api:active {
+      transform: scale(0.98);
+    }
+
+    #apiKeyStatus {
+      margin-top: 6px;
+      font-size: 11px;
+      color: var(--o-gray-500);
+    }
+
     .message-list {
       display: none;
     }
@@ -483,6 +539,25 @@
       padding: 8px;
       margin-bottom: 12px;
     }
+
+    .multilingual-option {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--o-gray-700);
+      margin-bottom: 14px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .multilingual-option input[type="checkbox"] {
+      width: 14px;
+      height: 14px;
+      margin: 0;
+      accent-color: var(--o-enterprise-action);
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -501,6 +576,11 @@
       <div class="saved-name">
         <span>Welcome, <span id="savedName" class="name-display"></span></span>
         <span class="edit-name" id="editName">Edit</span>
+      </div>
+      <div class="api-key-section">
+        <input type="password" id="apiKeyInput" placeholder="Enter Groq API Key" />
+        <button class="btn-save-api" id="saveApiKeyBtn">Save API Key</button>
+        <div id="apiKeyStatus"></div>
       </div>
     </div>
 
@@ -542,11 +622,15 @@ Best regards,
       <select id="languageSelect" class="language-select">
         <option value="">Select a language...</option>
       </select>
+      <label class="multilingual-option">
+        <input type="checkbox" id="multilingualCheck" />
+        <span>Multilingual — include English version</span>
+      </label>
       <div id="translateError" class="translate-error" style="display: none;"></div>
-      <div id="translateLoading" class="translate-loading" style="display: none;">Translating...</div>
+      <div id="translateLoading" class="translate-loading" style="display: none;">Rewriting &amp; translating...</div>
       <div class="translate-modal-actions">
         <button class="btn-keep-original" id="keepOriginalBtn">Keep Original Only</button>
-        <button class="btn-translate" id="translateBtn" disabled>Translate</button>
+        <button class="btn-translate" id="translateBtn" disabled>Translate &amp; Rewrite</button>
       </div>
     </div>
   </div>
