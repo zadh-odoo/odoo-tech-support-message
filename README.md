@@ -35,7 +35,7 @@ Includes **10 ready-to-use templates** with smart placeholders for dynamic conte
 ## 🛠️ Installation
 
 ```bash
-git clone https://github.com/yourusername/odoo-tech-support-message.git
+git clone https://github.com/zadh-odoo/odoo-tech-support-message.git
 ```
 
 1. Open Chrome → navigate to `chrome://extensions/`
